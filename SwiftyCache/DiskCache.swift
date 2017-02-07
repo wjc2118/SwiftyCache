@@ -3,7 +3,7 @@
 //  TEST
 //
 //  Created by Mac-os on 17/1/9.
-//  Copyright © 2017年 wjc2118. All rights reserved.
+//  Copyright © 2017年 risen. All rights reserved.
 //
 
 import Foundation
@@ -50,7 +50,7 @@ public class DiskCache {
     
     public let countLimit: UInt = UInt.max
     
-    public let ageLimit: TimeInterval = DBL_MAX
+    public let ageLimit: TimeInterval = .greatestFiniteMagnitude
     
     public let freeDiskSpaceLimit: UInt = 0
     
@@ -255,7 +255,7 @@ public class DiskCache {
             self?.Lock()
             self?._trimTo(cost: self?.costLimit ?? UInt.max)
             self?._trimTo(count: self?.countLimit ?? UInt.max)
-            self?._trimTo(age: self?.ageLimit ?? DBL_MAX)
+            self?._trimTo(age: self?.ageLimit ?? .greatestFiniteMagnitude)
             self?._trimTo(freeDiskSpace: self?.freeDiskSpaceLimit ?? 0)
             self?.Unlock()
         }
@@ -820,7 +820,7 @@ fileprivate class Storager {
         sqlite3_bind_int(stmt, 3, Int32(value.count))
         
         if filename?.isEmpty ?? true {
-            sqlite3_bind_blob(stmt, 4, [UInt8](value), Int32(value.count), nil)
+            sqlite3_bind_blob(stmt, 4, [UInt8](value), Int32(value.count), SQLITE_TRANSIENT)
         } else {
             sqlite3_bind_blob(stmt, 4, nil, 0, nil)
         }

@@ -3,7 +3,7 @@
 //  TEST
 //
 //  Created by Mac-os on 17/1/5.
-//  Copyright © 2017年 wjc2118. All rights reserved.
+//  Copyright © 2017年 risen. All rights reserved.
 //
 
 import Foundation
@@ -29,7 +29,7 @@ public class MemoryCache {
     
     public var countLimit: UInt = UInt.max
     
-    public var ageLimit: TimeInterval = DBL_MAX
+    public var ageLimit: TimeInterval = .greatestFiniteMagnitude
     
     public var autoTrimInterval: TimeInterval = 5.0
     
