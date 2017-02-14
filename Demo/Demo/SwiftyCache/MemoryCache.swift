@@ -11,14 +11,14 @@ import UIKit
 
 public class MemoryCache {
     
-    init() {
+    public init() {
         pthread_mutex_init(&_lock, nil)
         
         NotificationCenter.default.addObserver(self, selector: #selector(MemoryCache._appDidReceiveMemoryWarningNotification), name: .UIApplicationDidReceiveMemoryWarning, object: nil)
         
         NotificationCenter.default.addObserver(self, selector: #selector(MemoryCache._appDidEnterBackgroundNotification), name: .UIApplicationDidEnterBackground, object: nil)
         
-        //        _trimRecursively()
+        _trimRecursively()
     }
     
     deinit {
@@ -187,7 +187,6 @@ public class MemoryCache {
     }
     
     @objc private func _appDidReceiveMemoryWarningNotification() {
-        print("_appDidReceiveMemoryWarningNotification")
         if shouldRemoveAllObjectsOnMemoryWarning {
             removeAll()
         }

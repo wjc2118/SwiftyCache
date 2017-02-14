@@ -13,7 +13,7 @@ public class DiskCache {
     
     // MARK: - public
     
-    static func cache(path: String, inlineThreshold: UInt = 1024 * 20) -> DiskCache? {
+    public static func cache(path: String, inlineThreshold: UInt = 1024 * 20) -> DiskCache? {
         if let global = _globalInstances[path] {
             return global
         }
@@ -26,7 +26,7 @@ public class DiskCache {
         
     }
     
-    init?(path: String, inlineThreshold: UInt = 1024 * 20) {
+    public init?(path: String, inlineThreshold: UInt = 1024 * 20) {
         
         guard let storager = Storager(path: path) else { return nil }
         _storager = storager
@@ -71,9 +71,9 @@ public class DiskCache {
     }
     
     public func containsObject(forkey key: String) -> Bool {
-        self.Lock()
+        Lock()
         let contains = _storager.itemExists(forKey: key)
-        self.Unlock()
+        Unlock()
         return contains
     }
     
@@ -85,9 +85,9 @@ public class DiskCache {
     }
     
     public func object(forKey key: String, closure: (([String: Any]) -> (Any))? = nil) -> Any? {
-        self.Lock()
+        Lock()
         let item = _storager.item(forKey: key)
-        self.Unlock()
+        Unlock()
         guard let value = item?.value else { return nil }
         
         guard var any = NSKeyedUnarchiver.unarchiveObject(with: value) else { return nil }
@@ -642,7 +642,7 @@ fileprivate class Storager {
     
     private let _trashPath: String
     
-    private let _tramQueue = DispatchQueue(label: "_tramQueue", qos: .background) // background for Disk I/O Throttle
+    private let _trashQueue = DispatchQueue(label: "_trashQueue", qos: .background) // background for Disk I/O Throttle
     
     private func _fileWrite(data: Data, withName name: String) -> Bool {
         let filePath = _dataPath.appending("/" + name)
@@ -687,7 +687,7 @@ fileprivate class Storager {
     }
     
     private func _fileEmptyTrashInBackground() {
-        _tramQueue.async {
+        _trashQueue.async {
             guard let contents = try? FileManager.default.contentsOfDirectory(atPath: self._trashPath) else { return }
             contents.forEach({ (path) in
                 let fullPath = self._trashPath.appending("/" + path)

@@ -21,7 +21,7 @@ class ViewController: UIViewController {
         print(cache.object(forKey: "string") as Any)
         
         print(cache.object(forKey: "array") as Any)
-        cache.setObject([1, 2, 3], forKey: "array")
+        cache.setObject([1, 2, 3, 4], forKey: "array")
         print(cache.object(forKey: "array") as Any)
         
         print(cache.object(forKey: "struct", CachedType: MyStruct.self) as Any)
