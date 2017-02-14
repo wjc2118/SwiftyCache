@@ -35,7 +35,6 @@ public class DiskCache {
         
         _trimRecursively()
         
-        NotificationCenter.default.addObserver(self, selector: #selector(DiskCache._appWillTerminate), name: .UIApplicationWillTerminate, object: nil)
     }
     
     deinit {
@@ -239,9 +238,6 @@ public class DiskCache {
     private func Unlock() {
         _lock.signal()
     }
- 
-    @objc private func _appWillTerminate() {
-    }
     
     private func _trimRecursively() {
         DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + autoTrimInterval) { [weak self] in
@@ -302,7 +298,7 @@ public class DiskCache {
     
 }
 
-extension String {
+fileprivate extension String {
     
     fileprivate var md5: String {
         
