@@ -56,23 +56,23 @@ public class DiskCache {
     public let autoTrimInterval: TimeInterval = 60
     
     public var totalCost: Int {
-        Lock()
+        _lock()
         let c = _storager.itemsSize()
-        Unlock()
+        _unlock()
         return c
     }
     
     public var totalCount: Int {
-        Lock()
+        _lock()
         let c = _storager.itemsCount()
-        Unlock()
+        _unlock()
         return c
     }
     
     public func containsObject(forkey key: String) -> Bool {
-        Lock()
+        _lock()
         let contains = _storager.itemExists(forKey: key)
-        Unlock()
+        _unlock()
         return contains
     }
     
@@ -84,9 +84,9 @@ public class DiskCache {
     }
     
     public func object(forKey key: String, closure: (([String: Any]) -> (Any))? = nil) -> Any? {
-        Lock()
+        _lock()
         let item = _storager.item(forKey: key)
-        Unlock()
+        _unlock()
         guard let value = item?.value else { return nil }
         
         guard var any = NSKeyedUnarchiver.unarchiveObject(with: value) else { return nil }
@@ -113,9 +113,9 @@ public class DiskCache {
         
         let filename = UInt(data.count) > inlineThreshold ? _filename(forKey: key) : nil
         
-        Lock()
+        _lock()
         let suc = _storager.saveItem(key: key, value: data, filename: filename)
-        Unlock()
+        _unlock()
         return suc 
     }
     
@@ -126,9 +126,9 @@ public class DiskCache {
     }
     
     public func removeObject(forKey key: String) -> Bool {
-        Lock()
+        _lock()
         let suc = _storager.removeItem(key: key)
-        Unlock()
+        _unlock()
         return suc
     }
     
@@ -139,9 +139,9 @@ public class DiskCache {
     }
     
     public func removeAll() -> Bool {
-        Lock()
+        _lock()
         let suc = _storager.removeAllItems()
-        Unlock()
+        _unlock()
         return suc
     }
     
@@ -153,9 +153,9 @@ public class DiskCache {
     
     public func removeAll(progress: @escaping (Int, Int) -> (), finish: @escaping (Bool) -> ()) {
         _queue.async { [weak self] in
-            self?.Lock()
+            self?._lock()
             self?._storager.removeAllItems(progress: progress, finish: finish)
-            self?.Unlock()
+            self?._unlock()
         }
     }
     
@@ -172,9 +172,9 @@ public class DiskCache {
     }
     
     public func trimTo(cost: UInt) {
-        Lock()
+        _lock()
         _trimTo(cost: cost)
-        Unlock()
+        _unlock()
     }
     
     public func trimTo(cost: UInt, async: @escaping () -> ()) {
@@ -185,9 +185,9 @@ public class DiskCache {
     }
     
     public func trimTo(count: UInt) {
-        Lock()
+        _lock()
         _trimTo(count: count)
-        Unlock()
+        _unlock()
     }
     
     public func trimTo(count: UInt, async: @escaping () -> ()) {
@@ -198,9 +198,9 @@ public class DiskCache {
     }
     
     public func trimTo(age: TimeInterval) {
-        Lock()
+        _lock()
         _trimTo(age: age)
-        Unlock()
+        _unlock()
     }
     
     public func trimTo(age: TimeInterval, async: @escaping () -> ()) {
@@ -216,7 +216,7 @@ public class DiskCache {
     
     private let _storager: Storager
     
-    private let _lock: DispatchSemaphore = DispatchSemaphore(value: 1)
+    private let __lock: DispatchSemaphore = DispatchSemaphore(value: 1)
     
     private let _queue: DispatchQueue = DispatchQueue(label: "DiskCacheQueue", attributes: .concurrent)
     
@@ -231,12 +231,12 @@ public class DiskCache {
         return attrs[.systemFreeSize] as? UInt ?? 0
     }
     
-    private func Lock() {
-        _ = _lock.wait(wallTimeout: .distantFuture)
+    private func _lock() {
+        _ = __lock.wait(wallTimeout: .distantFuture)
     }
     
-    private func Unlock() {
-        _lock.signal()
+    private func _unlock() {
+        __lock.signal()
     }
     
     private func _trimRecursively() {
@@ -248,12 +248,12 @@ public class DiskCache {
     
     private func _trimInBackground() {
         _queue.async { [weak self] in
-            self?.Lock()
+            self?._lock()
             self?._trimTo(cost: self?.costLimit ?? UInt.max)
             self?._trimTo(count: self?.countLimit ?? UInt.max)
             self?._trimTo(age: self?.ageLimit ?? .greatestFiniteMagnitude)
             self?._trimTo(freeDiskSpace: self?.freeDiskSpaceLimit ?? 0)
-            self?.Unlock()
+            self?._unlock()
         }
     }
     

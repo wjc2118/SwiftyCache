@@ -30,11 +30,11 @@ public class SwiftyCache {
         _diskCache = dc
     }
     
-    public func containsObject(forkey key: String) -> Bool {
+    public func containsValue(forKey key: String) -> Bool {
         return _memoryCache.containsObject(forkey: key) || _diskCache.containsObject(forkey: key)
     }
     
-    public func containsObject(forkey key: String, async: @escaping (String, Bool) -> ()) {
+    public func containsValue(forKey key: String, async: @escaping (String, Bool) -> ()) {
         if self._memoryCache.containsObject(forkey: key) {
             DispatchQueue.global().async {
                 async(key, true)
@@ -44,7 +44,7 @@ public class SwiftyCache {
         }
     }
     
-    public func object(forKey key: String, closure: (([String: Any]) -> (Any))? = nil) -> Any? {
+    public func value(forKey key: String, closure: (([String: Any]) -> (Any))? = nil) -> Any? {
         var obj = _memoryCache.object(forkey: key)
         if obj == nil {
             obj = _diskCache.object(forKey: key, closure: closure)
@@ -55,7 +55,7 @@ public class SwiftyCache {
         return obj
     }
     
-    public func object(forKey key: String, closure: (([String: Any]) -> (Any))? = nil, async: @escaping (String, Any?) -> ()) {
+    public func value(forKey key: String, closure: (([String: Any]) -> (Any))? = nil, async: @escaping (String, Any?) -> ()) {
         if let obj = _memoryCache.object(forkey: key) {
             DispatchQueue.global().async {
                 async(key, obj)
@@ -70,22 +70,22 @@ public class SwiftyCache {
         }
     }
     
-    public func setObject(_ object: Any, forKey key: String, closure: ((Any) -> ([String: Any]))? = nil) {
-        _memoryCache.setObject(object, forKey: key)
-        _ = _diskCache.setObject(object, forKey: key, closure: closure)
+    public func setValue(_ value: Any, forKey key: String, closure: ((Any) -> ([String: Any]))? = nil) {
+        _memoryCache.setObject(value, forKey: key)
+        _ = _diskCache.setObject(value, forKey: key, closure: closure)
     }
     
-    public func setObject(_ object: Any, forKey key: String, closure: ((Any) -> ([String: Any]))? = nil, async: @escaping (Bool) -> ()) {
-        _memoryCache.setObject(object, forKey: key)
-        _diskCache.setObject(object, forKey: key, closure: closure, async: async)
+    public func setValue(_ value: Any, forKey key: String, closure: ((Any) -> ([String: Any]))? = nil, async: @escaping (Bool) -> ()) {
+        _memoryCache.setObject(value, forKey: key)
+        _diskCache.setObject(value, forKey: key, closure: closure, async: async)
     }
     
-    public func removeObject(forKey key: String) {
+    public func removeValue(forKey key: String) {
         _memoryCache.removeObject(forKey: key)
         _ = _diskCache.removeObject(forKey: key)
     }
     
-    public func removeObject(forKey key: String, async: @escaping (String, Bool) -> ()) {
+    public func removeValue(forKey key: String, async: @escaping (String, Bool) -> ()) {
         _memoryCache.removeObject(forKey: key)
         _diskCache.removeObject(forKey: key, async: async)
     }
@@ -115,17 +115,17 @@ public class SwiftyCache {
 
 public extension SwiftyCache {
     
-    public func set<T: Datable>(object: T, forKey key: String) {
-        _memoryCache.setObject(object, forKey: key)
-        _ = _diskCache.setObject(object.keyValues, forKey: key)
+    public func set<T: Datable>(value: T, forKey key: String) {
+        _memoryCache.setObject(value, forKey: key)
+        _ = _diskCache.setObject(value.keyValues, forKey: key)
     }
     
-    public func set<T: Datable>(object: T, forKey key: String, async: @escaping (Bool) -> ()) {
-        _memoryCache.setObject(object, forKey: key)
-        _diskCache.setObject(object.keyValues, forKey: key, async: async)
+    public func set<T: Datable>(value: T, forKey key: String, async: @escaping (Bool) -> ()) {
+        _memoryCache.setObject(value, forKey: key)
+        _diskCache.setObject(value.keyValues, forKey: key, async: async)
     }
     
-    public func object<T: Datable>(forKey key: String, CachedType: T.Type) -> T? {
+    public func value<T: Datable>(forKey key: String, CachedType: T.Type) -> T? {
         if let obj = _memoryCache.object(forkey: key) as? T {
             return obj
         } else {
@@ -138,7 +138,7 @@ public extension SwiftyCache {
         }
     }
     
-    public func object<T: Datable>(forKey key: String, CachedType: T.Type, async: @escaping (String, T?) -> ()) {
+    public func value<T: Datable>(forKey key: String, CachedType: T.Type, async: @escaping (String, T?) -> ()) {
         if let obj = _memoryCache.object(forkey: key) as? T {
             DispatchQueue.global().async {
                 async(key, obj)

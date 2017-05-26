@@ -27,7 +27,7 @@ public class MemoryCache {
         pthread_mutex_destroy(&_lock)
     }
     
-    public var countLimit: UInt = UInt.max
+    public var countLimit: Int = Int.max
     
     public var ageLimit: TimeInterval = .greatestFiniteMagnitude
     
@@ -37,8 +37,7 @@ public class MemoryCache {
     
     public var shouldRemoveAllObjectsWhenEnteringBackground: Bool = true
     
-    public var totalCount: UInt {
-        
+    public var totalCount: Int {
         pthread_mutex_lock(&_lock)
         defer { pthread_mutex_unlock(&_lock) }
         return _list._totalCount
@@ -93,8 +92,8 @@ public class MemoryCache {
         _list.removeAll()
     }
     
-    public func trimToCount(_ count: UInt) {
-        if count == 0 {
+    public func trimToCount(_ count: Int) {
+        if count <= 0 {
             removeAll(); return
         }
         _trimToCount(count)
@@ -132,7 +131,7 @@ public class MemoryCache {
         }
     }
     
-    private func _trimToCount(_ count: UInt) {
+    private func _trimToCount(_ count: Int) {
         
         var isFinished = false
         
@@ -252,14 +251,14 @@ fileprivate class _List {
     var _head: _Node!
     var _tail: _Node!
     var _dict: [String: _Node] = [String: _Node]()
-    var _totalCount: UInt = 0
+    var _totalCount: Int { return _dict.count }
 }
 
 fileprivate extension _List {
     
      func insertAtHead(node: _Node) {
         _dict.updateValue(node, forKey: node._key)
-        _totalCount += 1
+        
         if _head == nil {
             _head = node
             _tail = node
@@ -291,7 +290,6 @@ fileprivate extension _List {
     
      func remove(node: _Node) {
         _dict.removeValue(forKey: node._key)
-        _totalCount -= 1
         
         node._prev?._next = node._next
         node._next?._prev = node._prev
@@ -304,7 +302,6 @@ fileprivate extension _List {
         if _tail == nil { return nil }
         let nodeToRemove = _tail!
         _dict.removeValue(forKey: nodeToRemove._key)
-        _totalCount -= 1
         
         if _head === _tail {
             _head = nil
@@ -318,10 +315,8 @@ fileprivate extension _List {
     }
     
      func removeAll() {
-        _totalCount = 0
         _head = nil
         _tail = nil
-        
         _dict = [String: _Node]()
     }
     

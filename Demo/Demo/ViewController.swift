@@ -16,17 +16,17 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = UIColor.white
         
-        print(cache.object(forKey: "string") as Any)
-        cache.setObject("xyz", forKey: "string")
-        print(cache.object(forKey: "string") as Any)
+        print(cache.value(forKey: "string") as Any)
+        cache.setValue("xyz", forKey: "string")
+        print(cache.value(forKey: "string") as Any)
         
-        print(cache.object(forKey: "array") as Any)
-        cache.setObject([1, 2, 3, 4], forKey: "array")
-        print(cache.object(forKey: "array") as Any)
+        print(cache.value(forKey: "array") as Any)
+        cache.setValue([1, 2, 3, 4], forKey: "array")
+        print(cache.value(forKey: "array") as Any)
         
-        print(cache.object(forKey: "struct", CachedType: MyStruct.self) as Any)
-        cache.set(object: MyStruct(num: 5, str: "abc"), forKey: "struct")
-        print(cache.object(forKey: "struct", CachedType: MyStruct.self) as Any)
+        print(cache.value(forKey: "struct", CachedType: MyStruct.self) as Any)
+        cache.set(value: MyStruct(num: 5, str: "abc"), forKey: "struct")
+        print(cache.value(forKey: "struct", CachedType: MyStruct.self) as Any)
     }
 
 
