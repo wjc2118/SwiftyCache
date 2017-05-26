@@ -7,28 +7,28 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9B7428361ED7C656005037AB /* DiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7428321ED7C656005037AB /* DiskCache.swift */; };
+		9B7428371ED7C656005037AB /* MemoryCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7428331ED7C656005037AB /* MemoryCache.swift */; };
+		9B7428381ED7C656005037AB /* SwiftyCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B7428351ED7C656005037AB /* SwiftyCache.swift */; };
 		F1498E611E51C5B1003C9C2C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1498E601E51C5B1003C9C2C /* AppDelegate.swift */; };
 		F1498E631E51C5B1003C9C2C /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1498E621E51C5B1003C9C2C /* ViewController.swift */; };
 		F1498E681E51C5B1003C9C2C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F1498E671E51C5B1003C9C2C /* Assets.xcassets */; };
 		F1498E6B1E51C5B1003C9C2C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F1498E691E51C5B1003C9C2C /* LaunchScreen.storyboard */; };
-		F1498E831E51C706003C9C2C /* DiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1498E7F1E51C706003C9C2C /* DiskCache.swift */; };
-		F1498E841E51C706003C9C2C /* MemoryCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1498E801E51C706003C9C2C /* MemoryCache.swift */; };
-		F1498E851E51C706003C9C2C /* SwiftyCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1498E821E51C706003C9C2C /* SwiftyCache.swift */; };
 		F1498E8C1E51C7B0003C9C2C /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F1498E8B1E51C7B0003C9C2C /* libsqlite3.tbd */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		9B7428321ED7C656005037AB /* DiskCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiskCache.swift; sourceTree = "<group>"; };
+		9B7428331ED7C656005037AB /* MemoryCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MemoryCache.swift; sourceTree = "<group>"; };
+		9B7428341ED7C656005037AB /* SwiftyCache-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SwiftyCache-Bridging-Header.h"; sourceTree = "<group>"; };
+		9B7428351ED7C656005037AB /* SwiftyCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftyCache.swift; sourceTree = "<group>"; };
 		F1498E5D1E51C5B1003C9C2C /* Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Demo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1498E601E51C5B1003C9C2C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F1498E621E51C5B1003C9C2C /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		F1498E671E51C5B1003C9C2C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F1498E6A1E51C5B1003C9C2C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F1498E6C1E51C5B1003C9C2C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		F1498E7F1E51C706003C9C2C /* DiskCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiskCache.swift; sourceTree = "<group>"; };
-		F1498E801E51C706003C9C2C /* MemoryCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MemoryCache.swift; sourceTree = "<group>"; };
-		F1498E821E51C706003C9C2C /* SwiftyCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwiftyCache.swift; sourceTree = "<group>"; };
 		F1498E8B1E51C7B0003C9C2C /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
-		F1498E8D1E51C7CD003C9C2C /* SwiftyCache-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SwiftyCache-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -43,6 +43,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9B7428311ED7C656005037AB /* SwiftyCache */ = {
+			isa = PBXGroup;
+			children = (
+				9B7428321ED7C656005037AB /* DiskCache.swift */,
+				9B7428331ED7C656005037AB /* MemoryCache.swift */,
+				9B7428341ED7C656005037AB /* SwiftyCache-Bridging-Header.h */,
+				9B7428351ED7C656005037AB /* SwiftyCache.swift */,
+			);
+			name = SwiftyCache;
+			path = ../../SwiftyCache;
+			sourceTree = "<group>";
+		};
 		F1498E541E51C5B1003C9C2C = {
 			isa = PBXGroup;
 			children = (
@@ -63,7 +75,7 @@
 		F1498E5F1E51C5B1003C9C2C /* Demo */ = {
 			isa = PBXGroup;
 			children = (
-				F1498E7E1E51C706003C9C2C /* SwiftyCache */,
+				9B7428311ED7C656005037AB /* SwiftyCache */,
 				F1498E601E51C5B1003C9C2C /* AppDelegate.swift */,
 				F1498E621E51C5B1003C9C2C /* ViewController.swift */,
 				F1498E671E51C5B1003C9C2C /* Assets.xcassets */,
@@ -71,17 +83,6 @@
 				F1498E6C1E51C5B1003C9C2C /* Info.plist */,
 			);
 			path = Demo;
-			sourceTree = "<group>";
-		};
-		F1498E7E1E51C706003C9C2C /* SwiftyCache */ = {
-			isa = PBXGroup;
-			children = (
-				F1498E7F1E51C706003C9C2C /* DiskCache.swift */,
-				F1498E801E51C706003C9C2C /* MemoryCache.swift */,
-				F1498E8D1E51C7CD003C9C2C /* SwiftyCache-Bridging-Header.h */,
-				F1498E821E51C706003C9C2C /* SwiftyCache.swift */,
-			);
-			path = SwiftyCache;
 			sourceTree = "<group>";
 		};
 		F1498E8A1E51C7B0003C9C2C /* Frameworks */ = {
@@ -165,10 +166,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				F1498E631E51C5B1003C9C2C /* ViewController.swift in Sources */,
-				F1498E851E51C706003C9C2C /* SwiftyCache.swift in Sources */,
-				F1498E841E51C706003C9C2C /* MemoryCache.swift in Sources */,
+				9B7428381ED7C656005037AB /* SwiftyCache.swift in Sources */,
+				9B7428371ED7C656005037AB /* MemoryCache.swift in Sources */,
 				F1498E611E51C5B1003C9C2C /* AppDelegate.swift in Sources */,
-				F1498E831E51C706003C9C2C /* DiskCache.swift in Sources */,
+				9B7428361ED7C656005037AB /* DiskCache.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -290,7 +291,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = wjc2118.Demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "Demo/SwiftyCache/SwiftyCache-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/../SwiftyCache/SwiftyCache-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 			};
@@ -305,7 +306,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = wjc2118.Demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "Demo/SwiftyCache/SwiftyCache-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/../SwiftyCache/SwiftyCache-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
