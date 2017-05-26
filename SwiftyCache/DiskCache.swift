@@ -6,7 +6,6 @@
 //  Copyright © 2017年 risen. All rights reserved.
 //
 
-import Foundation
 import UIKit
 
 public class DiskCache {

@@ -6,7 +6,6 @@
 //  Copyright © 2017年 risen. All rights reserved.
 //
 
-import Foundation
 import UIKit
 
 public class MemoryCache {
@@ -111,11 +110,11 @@ public class MemoryCache {
         closure()
     }
     
-    private var _list: _List = _List()
+    private var _list = _List()
     
-    private var _lock: pthread_mutex_t = pthread_mutex_t()
+    private var _lock = pthread_mutex_t()
     
-    private let _trimQueue: DispatchQueue = DispatchQueue(label: "_trimQueue")
+    private let _trimQueue = DispatchQueue(label: "_trimQueue")
     
     private func _trimRecursively() {
         DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + self.autoTrimInterval) { [weak self] in
