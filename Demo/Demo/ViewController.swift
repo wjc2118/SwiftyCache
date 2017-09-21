@@ -44,7 +44,9 @@ class ViewController: UIViewController {
 struct Test: Codable {
     let num: Int
     let str: String
+    
 }
+
 
 
 
