@@ -16,35 +16,35 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = UIColor.white
         
-        print(cache.value(forKey: "string") as Any)
-        cache.setValue("xyz", forKey: "string")
-        print(cache.value(forKey: "string") as Any)
+        print(cache.value(for: "string") as Any)
+        cache.setValue("xyz", for: "string")
+        print(cache.value(for: "string") as Any)
         
-        print(cache.value(forKey: "array") as Any)
-        cache.setValue([1, 2, 3, 4], forKey: "array")
-        print(cache.value(forKey: "array") as Any)
+        print(cache.value(for: "array") as Any)
+        cache.setValue([1, 2, 3, 4], for: "array")
+        print(cache.value(for: "array") as Any)
         
-        print(cache.value(forKey: "struct", CachedType: MyStruct.self) as Any)
-        cache.set(value: MyStruct(num: 5, str: "abc"), forKey: "struct")
-        print(cache.value(forKey: "struct", CachedType: MyStruct.self) as Any)
+        print(cache.decode(for: "test", type: Test.self) as Any)
+        cache.encode(Test(num: 4, str: "aaa"), for: "test")
+        print(cache.decode(for: "test", type: Test.self) as Any)
+        
+        var d = [Int: Test]()
+        for i in 0..<5 {
+            d[i] = Test(num: i, str: "abc")
+        }
+        print(cache.decode(for: "dict", type: [Int: Test].self) as Any)
+        cache.encode(d, for: "dict")
+        print(cache.decode(for: "dict", type: [Int: Test].self) as Any)
+        
     }
-
+    
 
 }
 
-struct MyStruct {
+struct Test: Codable {
     let num: Int
     let str: String
 }
 
-extension MyStruct: Datable {
-    var keyValues: [String : Any] {
-        return ["n": num, "s": str]
-    }
-    
-    init?(keyValues: [String : Any]?) {
-        guard let dict = keyValues, let n = dict["n"] as? Int, let s = dict["s"] as? String else { return nil }
-        self.init(num: n, str: s)
-    }
-}
+
 

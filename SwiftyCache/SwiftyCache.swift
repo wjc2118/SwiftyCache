@@ -8,86 +8,79 @@
 
 import Foundation
 
-public protocol Datable {
-    var keyValues: [String: Any] { get }
-    init?(keyValues: [String: Any]?)
-}
-
-public class SwiftyCache {
+public final class SwiftyCache {
     
     // MARK: - public
     
     public convenience init?(name: String) {
         guard let cachePath = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first else { return nil }
-        let path = cachePath.appending("/" + name)
-        self.init(path: path)
+        self.init(path: cachePath + "/" + name)
     }
     
     public init?(path: String) {
         guard let dc = DiskCache.cache(path: path) else { return nil }
-        //        guard let dc = DiskCache(path: path) else { return nil }
         _memoryCache = MemoryCache()
         _diskCache = dc
     }
     
-    public func containsValue(forKey key: String) -> Bool {
-        return _memoryCache.containsObject(forkey: key) || _diskCache.containsObject(forkey: key)
+    public func contains(for key: String) -> Bool {
+        return _memoryCache.contains(for: key) || _diskCache.contains(for: key)
     }
     
-    public func containsValue(forKey key: String, async: @escaping (String, Bool) -> ()) {
-        if self._memoryCache.containsObject(forkey: key) {
+    public func contains(for key: String, async: @escaping (String, Bool) -> ()) {
+        if self._memoryCache.contains(for: key) {
             DispatchQueue.global().async {
                 async(key, true)
             }
         } else {
-            self._diskCache.containsObject(forkey: key, async: async)
+            self._diskCache.contains(for: key, async: async)
         }
     }
     
-    public func value(forKey key: String, closure: (([String: Any]) -> (Any))? = nil) -> Any? {
-        var obj = _memoryCache.object(forkey: key)
-        if obj == nil {
-            obj = _diskCache.object(forKey: key, closure: closure)
-            if obj != nil {
-                _memoryCache.setObject(obj!, forKey: key)
-            }
+    public func value(for key: String) -> Any? {
+        if let val = _memoryCache.value(for: key) {
+            return val
         }
-        return obj
+        guard let val = _diskCache.value(for: key) else {
+            return nil
+        }
+        _memoryCache.setValue(val, for: key)
+        return val
     }
     
-    public func value(forKey key: String, closure: (([String: Any]) -> (Any))? = nil, async: @escaping (String, Any?) -> ()) {
-        if let obj = _memoryCache.object(forkey: key) {
+    public func value(for key: String, async: @escaping (String, Any?) -> ()) {
+        if let obj = _memoryCache.value(for: key) {
             DispatchQueue.global().async {
                 async(key, obj)
             }
         } else {
-            _diskCache.object(forKey: key, closure: closure, async: { (k, obj) in
-                if obj != nil && self._memoryCache.object(forkey: k) == nil {
-                    self._memoryCache.setObject(obj!, forKey: k)
+            _diskCache.value(for: key, async: { (k, obj) in
+                if obj != nil && self._memoryCache.value(for: k) == nil {
+                    self._memoryCache.setValue(obj!, for: k)
                 }
                 async(k, obj)
             })
         }
     }
     
-    public func setValue(_ value: Any, forKey key: String, closure: ((Any) -> ([String: Any]))? = nil) {
-        _memoryCache.setObject(value, forKey: key)
-        _ = _diskCache.setObject(value, forKey: key, closure: closure)
+    public func setValue(_ val: Any, for key: String) {
+        _memoryCache.setValue(val, for: key)
+        _ = _diskCache.setValue(val, for: key)
     }
     
-    public func setValue(_ value: Any, forKey key: String, closure: ((Any) -> ([String: Any]))? = nil, async: @escaping (Bool) -> ()) {
-        _memoryCache.setObject(value, forKey: key)
-        _diskCache.setObject(value, forKey: key, closure: closure, async: async)
+    public func setValue(_ val: Any, for key: String, async: @escaping (Bool) -> ()) {
+        _memoryCache.setValue(val, for: key)
+        _diskCache.setValue(val, for: key, async: async)
     }
     
-    public func removeValue(forKey key: String) {
-        _memoryCache.removeObject(forKey: key)
-        _ = _diskCache.removeObject(forKey: key)
+    public func removeValue(for key: String) {
+        _memoryCache.removeValue(for: key)
+        _ = _diskCache.removeValue(for: key)
     }
     
-    public func removeValue(forKey key: String, async: @escaping (String, Bool) -> ()) {
-        _memoryCache.removeObject(forKey: key)
-        _diskCache.removeObject(forKey: key, async: async)
+    public func removeValue(for key: String, async: @escaping (String, Bool) -> ()) {
+        _memoryCache.removeValue(for: key)
+        _diskCache.removeValue(for: key, async: async)
     }
     
     public func removeAll() {
@@ -107,54 +100,57 @@ public class SwiftyCache {
     
     // MARK: - private
     
-    fileprivate let _memoryCache: MemoryCache
+    private let _memoryCache: MemoryCache
     
-    fileprivate let _diskCache: DiskCache
+    private let _diskCache: DiskCache
+    
+    private lazy var _encoder = JSONEncoder()
+    
+    private lazy var _decoder = JSONDecoder()
     
 }
 
+// MARK: - Codable
+
 public extension SwiftyCache {
     
-    public func set<T: Datable>(value: T, forKey key: String) {
-        _memoryCache.setObject(value, forKey: key)
-        _ = _diskCache.setObject(value.keyValues, forKey: key)
-    }
-    
-    public func set<T: Datable>(value: T, forKey key: String, async: @escaping (Bool) -> ()) {
-        _memoryCache.setObject(value, forKey: key)
-        _diskCache.setObject(value.keyValues, forKey: key, async: async)
-    }
-    
-    public func value<T: Datable>(forKey key: String, CachedType: T.Type) -> T? {
-        if let obj = _memoryCache.object(forkey: key) as? T {
-            return obj
+    public func encode<V: Encodable>(_ val: V, for key: String, async: ((Bool) -> ())? = nil) {
+        _memoryCache.setValue(val, for: key)
+        guard let data = try? _encoder.encode(val) else { return }
+        if let async = async {
+            _diskCache.setData(data, for: key, async: async)
         } else {
-            guard let dict = _diskCache.object(forKey: key) as? [String: Any] else { return nil }
-            let obj =  CachedType.init(keyValues: dict)
-            if obj != nil {
-                _memoryCache.setObject(obj!, forKey: key)
-            }
-            return obj
+            _ = _diskCache.setData(data, for: key)
         }
     }
     
-    public func value<T: Datable>(forKey key: String, CachedType: T.Type, async: @escaping (String, T?) -> ()) {
-        if let obj = _memoryCache.object(forkey: key) as? T {
+    public func decode<V: Decodable>(for key: String, type: V.Type) -> V? {
+        if let val = _memoryCache.value(for: key) as? V {
+            return val
+        }
+        guard let data = _diskCache.data(for: key), let val = try? _decoder.decode(type, from: data) else { return nil }
+        return val
+    }
+    
+    public func decode<V: Decodable>(for key: String, type: V.Type, async: @escaping (String, V?) -> ()) {
+        if let val = _memoryCache.value(for: key) as? V {
             DispatchQueue.global().async {
-                async(key, obj)
+                async(key, val)
             }
-        } else {
-            
-            _diskCache.object(forKey: key, async: { (key, dict) in
-                guard let dict = dict as? [String: Any] else {
-                    async(key, nil); return
-                }
-                let obj = CachedType.init(keyValues: dict)
-                if obj != nil {
-                    self._memoryCache.setObject(obj!, forKey: key)
-                }
-                async(key, obj)
-            })
+        }
+        _diskCache.data(for: key) { (key, data) in
+            guard let data = data, let val = try? self._decoder.decode(type, from: data) else {
+                async(key, nil); return
+            }
+            self._memoryCache.setValue(val, for: key)
+            async(key, val)
         }
     }
+    
 }
+
+
+
+
+
+

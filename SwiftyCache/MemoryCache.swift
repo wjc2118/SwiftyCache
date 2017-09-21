@@ -8,7 +8,7 @@
 
 import UIKit
 
-public class MemoryCache {
+public final class MemoryCache {
     
     public init() {
         pthread_mutex_init(&_lock, nil)
@@ -26,15 +26,15 @@ public class MemoryCache {
         pthread_mutex_destroy(&_lock)
     }
     
-    public var countLimit: Int = Int.max
+    public var countLimit: Int = .max
     
     public var ageLimit: TimeInterval = .greatestFiniteMagnitude
     
     public var autoTrimInterval: TimeInterval = 5.0
     
-    public var shouldRemoveAllObjectsOnMemoryWarning: Bool = true
+    public var shouldRemoveAllOnMemoryWarning: Bool = true
     
-    public var shouldRemoveAllObjectsWhenEnteringBackground: Bool = true
+    public var shouldRemoveAllWhenEnteringBackground: Bool = true
     
     public var totalCount: Int {
         pthread_mutex_lock(&_lock)
@@ -42,33 +42,33 @@ public class MemoryCache {
         return _list._totalCount
     }
     
-    public func containsObject(forkey key: String) -> Bool {
+    public func contains(for key: String) -> Bool {
         pthread_mutex_lock(&_lock)
         defer { pthread_mutex_unlock(&_lock) }
         return _list._dict.keys.contains(key)
     }
     
-    public func object(forkey key: String) -> Any? {
+    public func value(for key: String) -> Any? {
         pthread_mutex_lock(&_lock)
         defer { pthread_mutex_unlock(&_lock) }
         guard let node = _list._dict[key] else { return nil }
         node._time = CACurrentMediaTime()
         _list.bringToHead(node: node)
-        return node._object
+        return node._value
     }
     
-    public func setObject(_ object: Any, forKey key: String) {
+    public func setValue(_ val: Any, for key: String) {
         pthread_mutex_lock(&_lock)
         defer { pthread_mutex_unlock(&_lock) }
         let now = CACurrentMediaTime()
         if let node = _list._dict[key] {
             node._time = now
-            node._object = object
+            node._value = val
             _list.bringToHead(node: node)
         } else {
             let node = _Node()
             node._key = key
-            node._object = object
+            node._value = val
             node._time = now
             _list.insertAtHead(node: node)
         }
@@ -78,7 +78,7 @@ public class MemoryCache {
         }
     }
     
-    public func removeObject(forKey key: String) {
+    public func removeValue(for key: String) {
         pthread_mutex_lock(&_lock)
         defer { pthread_mutex_unlock(&_lock) }
         guard let node = _list._dict[key] else { return }
@@ -103,12 +103,6 @@ public class MemoryCache {
     }
     
     // MARK: - private
-    
-    private func _lock(closure: () -> ()) {
-        pthread_mutex_lock(&self._lock)
-        defer { pthread_mutex_unlock(&self._lock) }
-        closure()
-    }
     
     private var _list = _List()
     
@@ -185,13 +179,13 @@ public class MemoryCache {
     }
     
     @objc private func _appDidReceiveMemoryWarningNotification() {
-        if shouldRemoveAllObjectsOnMemoryWarning {
+        if shouldRemoveAllOnMemoryWarning {
             removeAll()
         }
     }
     
     @objc private func _appDidEnterBackgroundNotification() {
-        if shouldRemoveAllObjectsWhenEnteringBackground {
+        if shouldRemoveAllWhenEnteringBackground {
             removeAll()
         }
     }
@@ -201,11 +195,10 @@ public class MemoryCache {
         var _node3 = _Node()
         var _node2 = _Node()
         
-//        print(_list._head._key, _list._tail._key)
         for i in 0..<5 {
             let node = _Node()
             node._key = String(i)
-            node._object = i
+            node._value = i
             node._time = CACurrentMediaTime()
             _list.insertAtHead(node: node)
             if i == 3 {
@@ -242,7 +235,7 @@ fileprivate class _Node {
     weak var _prev: _Node?
     weak var _next: _Node?
     var _key: String!
-    var _object: Any!
+    var _value: Any!
     var _time: CFTimeInterval!
 }
 

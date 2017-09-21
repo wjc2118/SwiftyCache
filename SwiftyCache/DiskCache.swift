@@ -8,11 +8,9 @@
 
 import UIKit
 
-public class DiskCache {
+public final class DiskCache {
     
-    // MARK: - public
-    
-    public static func cache(path: String, inlineThreshold: UInt = 1024 * 20) -> DiskCache? {
+    public static func cache(path: String, inlineThreshold: Int = 1024 * 20) -> DiskCache? {
         if let global = _globalInstances[path] {
             return global
         }
@@ -25,7 +23,7 @@ public class DiskCache {
         
     }
     
-    public init?(path: String, inlineThreshold: UInt = 1024 * 20) {
+    public init?(path: String, inlineThreshold: Int = 1024 * 20) {
         
         guard let storager = Storager(path: path) else { return nil }
         _storager = storager
@@ -42,96 +40,140 @@ public class DiskCache {
     
     public let path: String
     
-    public let inlineThreshold: UInt
+    public let inlineThreshold: Int
     
-    public let costLimit: UInt = UInt.max
+    public let costLimit: Int = Int.max
     
-    public let countLimit: UInt = UInt.max
+    public let countLimit: Int = Int.max
     
     public let ageLimit: TimeInterval = .greatestFiniteMagnitude
     
-    public let freeDiskSpaceLimit: UInt = 0
+    public let freeDiskSpaceLimit: Int = 0
     
     public let autoTrimInterval: TimeInterval = 60
     
-    public var totalCost: Int {
-        _lock()
-        let c = _storager.itemsSize()
-        _unlock()
-        return c
-    }
+    // private
     
-    public var totalCount: Int {
-        _lock()
-        let c = _storager.itemsCount()
-        _unlock()
-        return c
-    }
+    private static var _globalInstances = [String: DiskCache]()
     
-    public func containsObject(forkey key: String) -> Bool {
+    private let _storager: Storager
+    
+    private let __lock: DispatchSemaphore = DispatchSemaphore(value: 1)
+    
+    private let _queue: DispatchQueue = DispatchQueue(label: "DiskCacheQueue", attributes: .concurrent)
+    
+    
+    
+}
+
+// MARK: - contains
+
+extension DiskCache {
+    
+    public func contains(for key: String) -> Bool {
         _lock()
         let contains = _storager.itemExists(forKey: key)
         _unlock()
         return contains
     }
     
-    public func containsObject(forkey key: String, async: @escaping (String, Bool) -> ()) {
+    public func contains(for key: String, async: @escaping (String, Bool) -> ()) {
         _queue.async { [weak self] in
-            let c = self?.containsObject(forkey: key) ?? false
+            let c = self?.contains(for: key) ?? false
             async(key, c)
         }
     }
+}
+
+// MARK: - set
+
+extension DiskCache {
     
-    public func object(forKey key: String, closure: (([String: Any]) -> (Any))? = nil) -> Any? {
+    public func setData(_ data: Data, for key: String) -> Bool {
+        let filename = data.count > inlineThreshold ? _filename(forKey: key) : nil
+        
+        _lock()
+        let suc = _storager.saveItem(key: key, value: data, filename: filename)
+        _unlock()
+        return suc
+    }
+    
+    public func setData(_ data: Data, for key: String, async: @escaping (Bool) -> ()) {
+        _queue.async { [weak self] in
+            async(self?.setData(data, for: key) ?? false)
+        }
+    }
+    
+    public func setValue(_ object: Any, for key: String) -> Bool {
+        
+        let data = NSKeyedArchiver.archivedData(withRootObject: object)
+        
+        let filename = data.count > inlineThreshold ? _filename(forKey: key) : nil
+        
+        _lock()
+        let suc = _storager.saveItem(key: key, value: data, filename: filename)
+        _unlock()
+        return suc
+    }
+    
+    public func setValue(_ object: Any, for key: String, async: @escaping (Bool) -> ()) {
+        _queue.async { [weak self] in
+            async(self?.setValue(object, for: key) ?? false)
+        }
+    }
+    
+}
+
+// MARK: - get
+
+extension DiskCache {
+    
+    public func data(for key: String) -> Data? {
+        _lock()
+        let item = _storager.item(forKey: key)
+        _unlock()
+        guard let data = item?.value else { return nil }
+        return data
+    }
+    
+    public func data(for key: String, async: @escaping (String, Data?) -> ()) {
+        _queue.async { [weak self] in
+            let data = self?.data(for: key)
+            async(key, data)
+        }
+    }
+    
+    public func value(for key: String) -> Any? {
         _lock()
         let item = _storager.item(forKey: key)
         _unlock()
         guard let value = item?.value else { return nil }
         
-        guard var any = NSKeyedUnarchiver.unarchiveObject(with: value) else { return nil }
-        if let closure = closure, let dic = any as? [String: Any] {
-            any = closure(dic)
-        }
+        guard let any = NSKeyedUnarchiver.unarchiveObject(with: value) else { return nil }
+       
         return any
     }
     
-    public func object(forKey key: String, closure: (([String: Any]) -> (Any))? = nil, async: @escaping (String, Any?) -> ()) {
+    public func value(for key: String, async: @escaping (String, Any?) -> ()) {
         _queue.async { [weak self] in
-            let obj = self?.object(forKey: key, closure: closure)
+            let obj = self?.value(for: key)
             async(key, obj)
         }
     }
+}
+
+// MARK: - remove
+
+extension DiskCache {
     
-    public func setObject(_ object: Any, forKey key: String, closure: ((Any) -> ([String: Any]))? = nil) -> Bool {
-        
-        var toData = object
-        if let closure = closure {
-            toData = closure(object)
-        }
-        let data = NSKeyedArchiver.archivedData(withRootObject: toData)
-        
-        let filename = UInt(data.count) > inlineThreshold ? _filename(forKey: key) : nil
-        
-        _lock()
-        let suc = _storager.saveItem(key: key, value: data, filename: filename)
-        _unlock()
-        return suc 
-    }
-    
-    public func setObject(_ object: Any, forKey key: String, closure: ((Any) -> ([String: Any]))? = nil, async: @escaping (Bool) -> ()) {
-        _queue.async { [weak self] in
-            async(self?.setObject(object, forKey: key, closure: closure) ?? false)
-        }
-    }
-    
-    public func removeObject(forKey key: String) -> Bool {
+    public func removeValue(for key: String) -> Bool {
         _lock()
         let suc = _storager.removeItem(key: key)
         _unlock()
         return suc
     }
     
-    public func removeObject(forKey key: String, async: @escaping (String, Bool) -> ()) {
+    public func removeValue(for key: String, async: @escaping (String, Bool) -> ()) {
         _queue.async { [weak self] in
             async(key, self?._storager.removeItem(key: key) ?? false)
         }
@@ -158,6 +200,26 @@ public class DiskCache {
         }
     }
     
+}
+
+// MARK: - total
+
+extension DiskCache {
+    
+    public var totalCost: Int {
+        _lock()
+        let c = _storager.itemsSize()
+        _unlock()
+        return c
+    }
+    
+    public var totalCount: Int {
+        _lock()
+        let c = _storager.itemsCount()
+        _unlock()
+        return c
+    }
+    
     public func totalCost(_ async: @escaping (Int) -> ()) {
         _queue.async { [weak self] in
             async(self?.totalCost ?? 0)
@@ -169,27 +231,32 @@ public class DiskCache {
             async(self?.totalCount ?? 0)
         }
     }
+}
+
+// MARK: - trim
+
+extension DiskCache {
     
-    public func trimTo(cost: UInt) {
+    public func trimTo(cost: Int) {
         _lock()
         _trimTo(cost: cost)
         _unlock()
     }
     
-    public func trimTo(cost: UInt, async: @escaping () -> ()) {
+    public func trimTo(cost: Int, async: @escaping () -> ()) {
         _queue.async { [weak self] in
             self?.trimTo(cost: cost)
             async()
         }
     }
     
-    public func trimTo(count: UInt) {
+    public func trimTo(count: Int) {
         _lock()
         _trimTo(count: count)
         _unlock()
     }
     
-    public func trimTo(count: UInt, async: @escaping () -> ()) {
+    public func trimTo(count: Int, async: @escaping () -> ()) {
         _queue.async { [weak self] in
             self?.trimTo(count: count)
             async()
@@ -209,17 +276,12 @@ public class DiskCache {
         }
     }
     
-    // MARK: - private
-    
-    private static var _globalInstances = [String: DiskCache]()
-    
-    private let _storager: Storager
-    
-    private let __lock: DispatchSemaphore = DispatchSemaphore(value: 1)
-    
-    private let _queue: DispatchQueue = DispatchQueue(label: "DiskCacheQueue", attributes: .concurrent)
-    
-    private var _diskFreeSize: UInt {
+}
+
+// MARK: - private
+
+extension DiskCache {
+    private var _diskFreeSize: Int {
         var attrs: [FileAttributeKey : Any]
         do {
             try attrs = FileManager.default.attributesOfFileSystem(forPath: NSHomeDirectory())
@@ -227,7 +289,7 @@ public class DiskCache {
             print(error)
             return 0
         }
-        return attrs[.systemFreeSize] as? UInt ?? 0
+        return attrs[.systemFreeSize] as? Int ?? 0
     }
     
     private func _lock() {
@@ -248,22 +310,22 @@ public class DiskCache {
     private func _trimInBackground() {
         _queue.async { [weak self] in
             self?._lock()
-            self?._trimTo(cost: self?.costLimit ?? UInt.max)
-            self?._trimTo(count: self?.countLimit ?? UInt.max)
+            self?._trimTo(cost: self?.costLimit ?? Int.max)
+            self?._trimTo(count: self?.countLimit ?? Int.max)
             self?._trimTo(age: self?.ageLimit ?? .greatestFiniteMagnitude)
             self?._trimTo(freeDiskSpace: self?.freeDiskSpaceLimit ?? 0)
             self?._unlock()
         }
     }
     
-    private func _trimTo(cost: UInt) {
-        if cost >= UInt(Int.max) { return }
-        _ = _storager.removeItemsToFit(size: Int(cost))
+    private func _trimTo(cost: Int) {
+        if cost >= Int.max { return }
+        _ = _storager.removeItemsToFit(size: cost)
     }
     
-    private func _trimTo(count: UInt) {
-        if count >= UInt(Int.max) { return }
-        _ = _storager.removeItemsToFit(count: Int(count))
+    private func _trimTo(count: Int) {
+        if count >= Int.max { return }
+        _ = _storager.removeItemsToFit(count: count)
     }
     
     private func _trimTo(age: TimeInterval) {
@@ -279,7 +341,7 @@ public class DiskCache {
         _ = _storager.removeItemsEarlierThan(time: Int(timeLimit))
     }
     
-    private func _trimTo(freeDiskSpace: UInt) {
+    private func _trimTo(freeDiskSpace: Int) {
         if freeDiskSpace == 0 { return }
         let totalSize = _storager.itemsSize()
         if totalSize <= 0 { return }
@@ -287,14 +349,13 @@ public class DiskCache {
         if diskFreeSize == 0 { return }
         if freeDiskSpace <= diskFreeSize { return }
         let toTrim = freeDiskSpace - diskFreeSize  //  toTrim > 0
-        let limit = UInt(totalSize) - toTrim
+        let limit = Int(totalSize) - toTrim
         _trimTo(cost: limit)
     }
     
     private func _filename(forKey key: String) -> String {
         return key.md5
     }
-    
 }
 
 fileprivate extension String {
@@ -315,7 +376,6 @@ fileprivate extension String {
         result.deinitialize();
         
         return String(format: hash as String)
-        
     }
     
 }
