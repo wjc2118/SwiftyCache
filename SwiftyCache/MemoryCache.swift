@@ -112,8 +112,9 @@ public final class MemoryCache {
     
     private func _trimRecursively() {
         DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + self.autoTrimInterval) { [weak self] in
-            self?._trimInBackground()
-            self?._trimRecursively()
+            guard let `self` = self else { return }
+            self._trimInBackground()
+            self._trimRecursively()
         }
     }
     

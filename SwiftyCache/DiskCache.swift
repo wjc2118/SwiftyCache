@@ -79,7 +79,8 @@ extension DiskCache {
     
     public func contains(for key: String, async: @escaping (String, Bool) -> ()) {
         _queue.async { [weak self] in
-            let c = self?.contains(for: key) ?? false
+            guard let `self` = self else { return }
+            let c = self.contains(for: key)
             async(key, c)
         }
     }
@@ -100,7 +101,8 @@ extension DiskCache {
     
     public func setData(_ data: Data, for key: String, async: @escaping (Bool) -> ()) {
         _queue.async { [weak self] in
-            async(self?.setData(data, for: key) ?? false)
+            guard let `self` = self else { return }
+            async(self.setData(data, for: key))
         }
     }
     
@@ -118,7 +120,8 @@ extension DiskCache {
     
     public func setValue(_ object: Any, for key: String, async: @escaping (Bool) -> ()) {
         _queue.async { [weak self] in
-            async(self?.setValue(object, for: key) ?? false)
+            guard let `self` = self else { return }
+            async(self.setValue(object, for: key))
         }
     }
     
@@ -138,7 +141,8 @@ extension DiskCache {
     
     public func data(for key: String, async: @escaping (String, Data?) -> ()) {
         _queue.async { [weak self] in
-            let data = self?.data(for: key)
+            guard let `self` = self else { return }
+            let data = self.data(for: key)
             async(key, data)
         }
     }
@@ -156,7 +160,8 @@ extension DiskCache {
     
     public func value(for key: String, async: @escaping (String, Any?) -> ()) {
         _queue.async { [weak self] in
-            let obj = self?.value(for: key)
+            guard let `self` = self else { return }
+            let obj = self.value(for: key)
             async(key, obj)
         }
     }
@@ -175,7 +180,8 @@ extension DiskCache {
     
     public func removeValue(for key: String, async: @escaping (String, Bool) -> ()) {
         _queue.async { [weak self] in
-            async(key, self?._storager.removeItem(key: key) ?? false)
+            guard let `self` = self else { return }
+            async(key, self._storager.removeItem(key: key))
         }
     }
     
@@ -188,15 +194,17 @@ extension DiskCache {
     
     public func removeAll(async: @escaping (Bool) -> ()) {
         _queue.async { [weak self] in
-            async(self?.removeAll() ?? false)
+            guard let `self` = self else { return }
+            async(self.removeAll())
         }
     }
     
     public func removeAll(progress: @escaping (Int, Int) -> (), finish: @escaping (Bool) -> ()) {
         _queue.async { [weak self] in
-            self?._lock()
-            self?._storager.removeAllItems(progress: progress, finish: finish)
-            self?._unlock()
+            guard let `self` = self else { return }
+            self._lock()
+            self._storager.removeAllItems(progress: progress, finish: finish)
+            self._unlock()
         }
     }
     
@@ -222,13 +230,15 @@ extension DiskCache {
     
     public func totalCost(_ async: @escaping (Int) -> ()) {
         _queue.async { [weak self] in
-            async(self?.totalCost ?? 0)
+            guard let `self` = self else { return }
+            async(self.totalCost)
         }
     }
     
     public func totalCount(_ async: @escaping (Int) -> ()) {
         _queue.async { [weak self] in
-            async(self?.totalCount ?? 0)
+            guard let `self` = self else { return }
+            async(self.totalCount)
         }
     }
 }
@@ -245,7 +255,8 @@ extension DiskCache {
     
     public func trimTo(cost: Int, async: @escaping () -> ()) {
         _queue.async { [weak self] in
-            self?.trimTo(cost: cost)
+            guard let `self` = self else { return }
+            self.trimTo(cost: cost)
             async()
         }
     }
@@ -258,7 +269,8 @@ extension DiskCache {
     
     public func trimTo(count: Int, async: @escaping () -> ()) {
         _queue.async { [weak self] in
-            self?.trimTo(count: count)
+            guard let `self` = self else { return }
+            self.trimTo(count: count)
             async()
         }
     }
@@ -302,19 +314,21 @@ extension DiskCache {
     
     private func _trimRecursively() {
         DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + autoTrimInterval) { [weak self] in
-            self?._trimInBackground()
-            self?._trimRecursively()
+            guard let `self` = self else { return }
+            self._trimInBackground()
+            self._trimRecursively()
         }
     }
     
     private func _trimInBackground() {
         _queue.async { [weak self] in
-            self?._lock()
-            self?._trimTo(cost: self?.costLimit ?? Int.max)
-            self?._trimTo(count: self?.countLimit ?? Int.max)
-            self?._trimTo(age: self?.ageLimit ?? .greatestFiniteMagnitude)
-            self?._trimTo(freeDiskSpace: self?.freeDiskSpaceLimit ?? 0)
-            self?._unlock()
+            guard let `self` = self else { return }
+            self._lock()
+            self._trimTo(cost: self.costLimit)
+            self._trimTo(count: self.countLimit)
+            self._trimTo(age: self.ageLimit)
+            self._trimTo(freeDiskSpace: self.freeDiskSpaceLimit)
+            self._unlock()
         }
     }
     

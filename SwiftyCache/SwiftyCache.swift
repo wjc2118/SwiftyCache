@@ -50,9 +50,7 @@ public final class SwiftyCache {
     
     public func value(for key: String, async: @escaping (String, Any?) -> ()) {
         if let obj = _memoryCache.value(for: key) {
-            DispatchQueue.global().async {
-                async(key, obj)
-            }
+            async(key, obj)
         } else {
             _diskCache.value(for: key, async: { (k, obj) in
                 if obj != nil && self._memoryCache.value(for: k) == nil {
@@ -129,14 +127,14 @@ public extension SwiftyCache {
             return val
         }
         guard let data = _diskCache.data(for: key), let val = try? _decoder.decode(type, from: data) else { return nil }
+        _memoryCache.setValue(val, for: key)
         return val
     }
     
     public func decode<V: Decodable>(for key: String, type: V.Type, async: @escaping (String, V?) -> ()) {
         if let val = _memoryCache.value(for: key) as? V {
-            DispatchQueue.global().async {
-                async(key, val)
-            }
+            async(key, val)
+            return
         }
         _diskCache.data(for: key) { (key, data) in
             guard let data = data, let val = try? self._decoder.decode(type, from: data) else {
