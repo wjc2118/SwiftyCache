@@ -387,7 +387,7 @@ fileprivate extension String {
         for i in 0 ..< digestLen {
             hash.appendFormat("%02x", result[i]);
         }
-        result.deinitialize();
+        result.deinitialize(count: 1);
         
         return String(format: hash as String)
     }

@@ -13,9 +13,9 @@ public final class MemoryCache {
     public init() {
         pthread_mutex_init(&_lock, nil)
         
-        NotificationCenter.default.addObserver(self, selector: #selector(MemoryCache._appDidReceiveMemoryWarningNotification), name: .UIApplicationDidReceiveMemoryWarning, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(MemoryCache._appDidReceiveMemoryWarningNotification), name: UIApplication.didReceiveMemoryWarningNotification, object: nil)
         
-        NotificationCenter.default.addObserver(self, selector: #selector(MemoryCache._appDidEnterBackgroundNotification), name: .UIApplicationDidEnterBackground, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(MemoryCache._appDidEnterBackgroundNotification), name: UIApplication.didEnterBackgroundNotification, object: nil)
         
         _trimRecursively()
     }
